@@ -1,13 +1,21 @@
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import MobileLayout from "../components/MobileLayout";
 import DesktopLayout from "../components/DesktopLayout";
+import { signOut } from "next-auth/react";
 
 async function DashboardContent() {
   const session = await auth();
 
   if (!session) {
     redirect("/login");
+  }
+
+  const handleLogout = async () => {
+    await signOut({
+      redirect: true,
+      redirectTo: '/login'
+    })
   }
 
   return (
@@ -24,16 +32,17 @@ async function DashboardContent() {
           <li>Growth: +14.2%</li>
         </ul>
       </div>
-
+{/* 
       <form
         action={async () => {
           "use server";
           await signOut({ redirectTo: "/login" });
         }}
         style={{ marginTop: "30px" }}
-      >
+      > */}
         <button
-          type="submit"
+          type="button"
+          onClick={handleLogout}
           style={{
             padding: "8px 16px",
             backgroundColor: "#dc3545",
@@ -45,7 +54,7 @@ async function DashboardContent() {
         >
           Sign Out
         </button>
-      </form>
+      {/* </form> */}
     </div>
   );
 }
