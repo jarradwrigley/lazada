@@ -7,6 +7,7 @@ import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useStore } from "@/store/store";
 import { showError, showSuccess } from "@/lib/toast";
+import LoadingScreen from "../../LoadingScreen";
 
 // Separate component that uses useSearchParams
 function LoginForm() {
@@ -15,7 +16,7 @@ function LoginForm() {
   const returnUrl = searchParams.get("returnUrl") || "/dashboard";
 
   // Store state
-  const { login, isLoading, error, clearError } = useStore();
+  const { login, isLoading, error, clearError, setLoading } = useStore();
 
   // Local state
   const [showPassword, setShowPassword] = useState(false);
@@ -75,21 +76,16 @@ function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) return;
 
-    if (!validateForm()) {
-      return;
-    }
-
+    setLoading(true);
     try {
-      const result = await login(email, password, returnUrl);
-
+      const result = await login(email, password);
       if (result.success) {
-        showSuccess("Login successful!");
-        router.push(returnUrl);
+        router.push("/dashboard");
       }
-      // Error handling is done in the store
-    } catch (error) {
-      showError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -289,12 +285,7 @@ export default function MobileLoginPage() {
       <LoginHeader />
       <Suspense
         fallback={
-          <div className="pt-14 px-4 pb-4 flex items-center justify-center min-h-[50vh]">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-              <p className="text-gray-600">Loading...</p>
-            </div>
-          </div>
+          <LoadingScreen />
         }
       >
         <LoginForm />

@@ -1,295 +1,183 @@
-import NextAuth, { DefaultSession } from "next-auth";
+import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { UserRoles } from "./types";
-
-declare module "next-auth" {
-  interface Session {
-    accessToken?: string;
-  }
-}
 
 declare module "next-auth" {
   interface User {
-    accessToken?: string;
-    fullname: string;
-    refreshToken: string;
-    username: string;
-    roles?: UserRoles[];
-    phone: string;
+    token?: string;
   }
 }
 
-// Mock user database
-const MOCK_USERS = [
+// Mock users for development
+const mockUsers = [
   {
     id: "1",
-    fullname: "John Doe",
-    username: "johndoe",
-    email: "john.doe@example.com",
-    phone: "+1234567890",
-    profilePic: "/api/placeholder/150/150",
-    roles: ["user", "admin"],
+    email: "admin@test.com",
+    name: "Admin User",
+    username: "admin",
+    password: "admin123", // In real app, this would be hashed
+    roles: ["Admin", "SuperAdmin"],
+    profilePic: "/api/placeholder/100/100",
   },
   {
     id: "2",
-    fullname: "Jane Smith",
-    username: "janesmith",
-    email: "jane.smith@example.com",
-    phone: "+1987654321",
-    profilePic: "/api/placeholder/150/150",
-    roles: ["user"],
+    email: "user@test.com",
+    name: "Regular User",
+    username: "user",
+    password: "user123",
+    roles: ["User"],
+    profilePic: "/api/placeholder/100/100",
   },
   {
     id: "3",
-    fullname: "Alice Johnson",
-    username: "alicej",
-    email: "alice.johnson@example.com",
-    phone: "+1122334455",
-    profilePic: "/api/placeholder/150/150",
-    roles: ["user", "moderator"],
-  },
-  {
-    id: "4",
-    fullname: "Bob Wilson",
-    username: "bobw",
-    email: "bob.wilson@example.com",
-    phone: "+1555666777",
-    profilePic: "/api/placeholder/150/150",
-    roles: ["user"],
-  },
-  {
-    id: "5",
-    fullname: "Sarah Davis",
-    username: "sarahd",
-    email: "sarah.davis@example.com",
-    phone: "+1999888777",
-    profilePic: "/api/placeholder/150/150",
-    roles: ["user", "editor"],
+    email: "officer@test.com",
+    name: "Account Officer",
+    username: "officer",
+    password: "officer123",
+    roles: ["Account Officer"],
+    profilePic: "/api/placeholder/100/100",
   },
 ];
 
-const MOCK_PASSWORD = "123456";
+// Mock authentication function
+async function authenticateMockUser(username: string, password: string) {
+  const user = mockUsers.find(
+    (u) =>
+      (u.username === username || u.email === username) &&
+      u.password === password
+  );
 
-// Mock provider for development
-const MockProvider = Credentials({
-  id: "mock",
-  name: "Mock Credentials",
-  credentials: {
-    username: {
-      label: "Email/Phone",
-      type: "text",
-      placeholder: "Enter email or phone number",
-    },
-    password: {
-      label: "Password",
-      type: "password",
-    },
-  },
-  async authorize(credentials: any) {
-    try {
-      console.log("[Mock Auth] Attempting login with:", credentials?.username);
+  if (user) {
+    // Remove password from returned user object
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+  return null;
+}
 
-      if (!credentials?.username || !credentials?.password) {
-        console.log("[Mock Auth] Missing credentials");
-        throw new Error("Email/phone and password are required");
+// Backend authentication function (replace with your actual API call)
+async function authenticateBackendUser(username: string, password: string) {
+  try {
+    // Replace this with your actual backend API call
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
       }
+    );
 
-      // Check password
-      if (credentials.password !== MOCK_PASSWORD) {
-        console.log("[Mock Auth] Invalid password");
-        throw new Error("Invalid password");
-      }
-
-      // Find user by email or phone
-      const user = MOCK_USERS.find(
-        (u) =>
-          u.email.toLowerCase() === credentials.username.toLowerCase() ||
-          u.phone === credentials.username ||
-          u.username.toLowerCase() === credentials.username.toLowerCase()
-      );
-
-      if (!user) {
-        console.log("[Mock Auth] User not found");
-        throw new Error("User not found");
-      }
-
-      console.log("[Mock Auth] Login successful for:", user.email);
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Return user object that will be stored in the JWT
+    if (response.ok) {
+      const userData = await response.json();
       return {
-        id: user.id,
-        email: user.email,
-        name: user.fullname,
-        image: user.profilePic,
-        // Custom fields
-        fullname: user.fullname,
-        username: user.username,
-        phone: user.phone,
-        roles: user.roles,
-      } as any;
-    } catch (error) {
-      console.error("[Mock Auth] Authentication failed:", error);
-      // Return null to indicate authentication failed
-      return null;
+        id: userData.id,
+        email: userData.email,
+        name: userData.fullname || userData.name,
+        username: userData.username,
+        roles: userData.roles || ["User"],
+        profilePic: userData.profilePic || "/api/placeholder/100/100",
+      };
     }
-  },
-});
+    return null;
+  } catch (error) {
+    console.error("Backend authentication error:", error);
+    return null;
+  }
+}
 
-// Production backend provider (skeletal structure)
-const BackendProvider = Credentials({
-  id: "backend",
-  name: "Backend Credentials",
-  credentials: {
-    username: {
-      label: "Email/Phone",
-      type: "text",
-    },
-    password: {
-      label: "Password",
-      type: "password",
-    },
-  },
-  async authorize(credentials) {
-    try {
-      if (!credentials?.username || !credentials?.password) {
-        throw new Error("Email/phone and password are required");
-      }
-
-      // Make API call to your backend authentication endpoint
-      const response = await fetch(
-        `${process.env.BACKEND_URL}/api/auth/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            identifier: credentials.username, // email or phone
-            password: credentials.password,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Authentication failed");
-      }
-
-      // Backend should return user data and tokens
-      if (data.success && data.user) {
-        return {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.fullname,
-          image: data.user.profilePic,
-          // Custom fields from your backend
-          fullname: data.user.fullname,
-          username: data.user.username,
-          phone: data.user.phone,
-          roles: data.user.roles,
-          // Store tokens for API calls
-          accessToken: data.accessToken,
-          refreshToken: data.refreshToken,
-        };
-      }
-
-      return null;
-    } catch (error) {
-      console.error("[Backend Auth] Authentication failed:", error);
-      return null;
-    }
-  },
-});
+const isDevelopment = process.env.NODE_ENV === "development";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
+    // Google OAuth (available in all environments)
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
-    // Use mock provider in development, backend in production
-    process.env.NODE_ENV === "development" ? MockProvider : BackendProvider,
+
+    // Credentials provider for username/password authentication
+    Credentials({
+      id: isDevelopment ? "mock" : "backend",
+      name: isDevelopment ? "Mock Login" : "Credentials",
+      credentials: {
+        username: {
+          label: "Username or Email",
+          type: "text",
+          placeholder: isDevelopment
+            ? "admin, user, or officer"
+            : "Enter username/email",
+        },
+        password: {
+          label: "Password",
+          type: "password",
+          placeholder: isDevelopment
+            ? "admin123, user123, or officer123"
+            : "Enter password",
+        },
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          return null;
+        }
+
+        const { username, password } = credentials;
+
+        if (isDevelopment) {
+          // Use mock authentication in development
+          return await authenticateMockUser(
+            username as string,
+            password as string
+          );
+        } else {
+          // Use backend authentication in production
+          return await authenticateBackendUser(
+            username as string,
+            password as string
+          );
+        }
+      },
+    }),
   ],
+
   pages: {
     signIn: "/login",
-    error: "/login", // Redirect to login page on error
+    error: "/login",
   },
-  session: {
-    strategy: "jwt",
-  },
-  callbacks: {
-    async jwt({ token, user, account }) {
-      // Initial sign in
-      if (account && user) {
-        return {
-          ...token,
-          accessToken: user.accessToken,
-          refreshToken: user.refreshToken,
-          user: {
-            id: user.id,
-            email: user.email,
-            fullname: user.fullname,
-            username: user.username,
-            phone: user.phone,
-            profilePic: user.image,
-            roles: user.roles,
-          },
-        };
-      }
 
-      // Return previous token if the access token has not expired yet
+  callbacks: {
+    async jwt({ token, user }) {
+      // Persist user data in the token
+      if (user) {
+        token.id = user.id;
+        token.username = (user as any).username;
+        token.roles = (user as any).roles;
+        token.profilePic = (user as any).profilePic;
+      }
       return token;
     },
 
     async session({ session, token }) {
       // Send properties to the client
-      session.user = token.user as any;
-      session.accessToken = token.accessToken as string;
-
+      if (token) {
+        session.user.id = token.id as string;
+        (session.user as any).username = token.username;
+        (session.user as any).roles = token.roles;
+        (session.user as any).profilePic = token.profilePic;
+      }
       return session;
     },
 
-    async authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnLoginPage = nextUrl.pathname.startsWith("/login");
-      const isOnSignupPage = nextUrl.pathname.startsWith("/signup");
-      const isOnPublicPage =
-        nextUrl.pathname === "/" || nextUrl.pathname.startsWith("/public");
-
-      // Allow access to login/signup pages when not logged in
-      if (!isLoggedIn && (isOnLoginPage || isOnSignupPage || isOnPublicPage)) {
-        return true;
-      }
-
-      // Redirect to login if not logged in and trying to access protected pages
-      if (!isLoggedIn) {
-        return false;
-      }
-
-      // Redirect to home if logged in and trying to access login/signup
-      if (isLoggedIn && (isOnLoginPage || isOnSignupPage)) {
-        return Response.redirect(new URL("/", nextUrl));
-      }
-
-      return true;
+    authorized: async ({ auth }) => {
+      return !!auth;
     },
   },
-  events: {
-    async signIn({ user, account, profile, isNewUser }) {
-      console.log(`[Auth Event] User signed in:`, user.email);
-    },
-    //@ts-ignore
-    async signOut({ token }) {
-      // Since you're using JWT strategy, only token is available in signOut event
-      console.log(`[Auth Event] User signed out:`, token?.user?.email);
-    },
+
+  session: {
+    strategy: "jwt",
   },
+
+  secret: process.env.NEXTAUTH_SECRET,
 });
-
-// Export mock users for testing purposes
-export { MOCK_USERS, MOCK_PASSWORD };

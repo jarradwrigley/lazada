@@ -5,8 +5,18 @@ import { signIn, signOut, getSession } from "next-auth/react";
 import { showSuccess, showError, showInfo } from "@/lib/toast";
 import { UserRoles } from "@/lib/types";
 
+interface User {
+  id: string;
+  name: string; // Changed from fullname to match NextAuth
+  username: string; // Fixed typo from userame
+  email: string;
+  profilePic: string;
+  token?: string;
+  roles: string[];
+}
+
 interface AuthState {
-  user: any | null;
+  user: User | null;
   isAuthenticated: boolean;
 }
 
@@ -25,6 +35,7 @@ interface AppState {
     password: string,
     returnUrl?: string
   ) => Promise<{ success: boolean }>;
+  loginWithGoogle: () => Promise<{ success: boolean }>;
   logout: () => Promise<void>;
   clearError: () => void;
   resetStore: () => void;
@@ -34,7 +45,7 @@ interface AppState {
 
 export const useStore = create<AppState>((set, get) => ({
   auth: { user: null, isAuthenticated: false },
-  isLoading: false, // ← Changed to false by default
+  isLoading: true, // Start with loading true
   error: null,
   isHydrated: false,
   homeData: null,
@@ -93,9 +104,21 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const session = await getSession();
       if (session?.user) {
+        const user: User = {
+          id: (session.user as any).id || session.user.email || "",
+          name: session.user.name || "",
+          username: (session.user as any).username || "",
+          email: session.user.email || "",
+          profilePic:
+            (session.user as any).profilePic ||
+            session.user.image ||
+            "/api/placeholder/100/100",
+          roles: (session.user as any).roles || ["User"],
+        };
+
         set({
           auth: {
-            user: session.user as any,
+            user,
             isAuthenticated: true,
           },
           isLoading: false,
@@ -107,6 +130,7 @@ export const useStore = create<AppState>((set, get) => ({
         });
       }
     } catch (error) {
+      console.error("Session load error:", error);
       showError("Failed to load session");
       set({
         error: "Failed to load session",
@@ -119,27 +143,68 @@ export const useStore = create<AppState>((set, get) => ({
   login: async (username, password, returnUrl) => {
     set({ isLoading: true, error: null });
     try {
-      const provider =
-        process.env.NODE_ENV === "development" ? "mock" : "backend";
+      // Determine provider based on environment
+      const isDevelopment = process.env.NODE_ENV === "development";
+      const provider = isDevelopment ? "mock" : "backend";
 
       const result = await signIn(provider, {
         username,
         password,
         redirect: false,
+        callbackUrl: returnUrl || "/dashboard",
       });
 
       if (result?.error) {
-        showError(`Login failed: ${result.error}`);
-        set({ error: result.error, isLoading: false });
+        const errorMessage =
+          result.error === "CredentialsSignin"
+            ? "Invalid username or password"
+            : `Login failed: ${result.error}`;
+
+        showError(errorMessage);
+        set({ error: errorMessage, isLoading: false });
         return { success: false };
-      } else {
+      } else if (result?.ok) {
         showSuccess(`Welcome back, ${username}!`);
         await get().loadSession();
         return { success: true };
+      } else {
+        showError("Login failed - please try again");
+        set({ error: "Login failed", isLoading: false });
+        return { success: false };
       }
     } catch (error) {
+      console.error("Login error:", error);
       showError("Login failed due to an unexpected error");
       set({ error: "Login failed", isLoading: false });
+      return { success: false };
+    }
+  },
+
+  loginWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const result = await signIn("google", {
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
+
+      if (result?.error) {
+        showError(`Google login failed: ${result.error}`);
+        set({ error: result.error, isLoading: false });
+        return { success: false };
+      } else if (result?.ok) {
+        showSuccess("Successfully signed in with Google!");
+        await get().loadSession();
+        return { success: true };
+      } else {
+        showError("Google login failed - please try again");
+        set({ error: "Google login failed", isLoading: false });
+        return { success: false };
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      showError("Google login failed due to an unexpected error");
+      set({ error: "Google login failed", isLoading: false });
       return { success: false };
     }
   },
@@ -153,6 +218,7 @@ export const useStore = create<AppState>((set, get) => ({
       });
       showInfo("You have been logged out");
     } catch (error) {
+      console.error("Logout error:", error);
       showError("Logout failed");
       set({ error: "Logout failed" });
     }
