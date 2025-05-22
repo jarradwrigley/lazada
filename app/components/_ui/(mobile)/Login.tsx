@@ -122,7 +122,7 @@ function LoginForm() {
   const isSubmitting = isLoading || isGoogleLoading;
 
   return (
-    <div className="pt-14 px-4 pb-4 overflow-y-auto">
+    <div className="pt-14 px-4 pb-4 flex flex-col min-h-[100dvh] justify-between overflow-y-auto">
       <div className="flex flex-col gap-4">
         <span className="mb-4 text-3xl font-[600]">Hi, welcome back!</span>
 
@@ -226,33 +226,35 @@ function LoginForm() {
         </form>
       </div>
 
-      <div className="absolute bottom-[0%] pb-6 px-4 w-full flex flex-col gap-4">
+      <div className=" px-4 w-full flex flex-col justify-center gap-4">
         <div className="flex items-center justify-between">
           <div className="w-[40%] h-[0.1rem] bg-gray-200" />
           <span className="text-gray-400 text-xs">Other</span>
           <div className="w-[40%] h-[0.1rem] bg-gray-200" />
         </div>
 
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={isSubmitting}
-          className="w-full active:scale-102 flex items-center justify-center gap-3 bg-transparent border border-gray-300 text-black py-3 rounded-[12px] font-[600] text-lg active:opacity-80 transition-opacity disabled:opacity-50"
-        >
-          {isGoogleLoading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <>
-              <Image
-                src="/images/google.svg"
-                alt="Google"
-                width={20}
-                height={20}
-              />
-              Continue with Google
-            </>
-          )}
-        </button>
+        <div className="w-full ">
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={isSubmitting}
+            className="w-[100%] active:scale-102 flex items-center justify-center gap-3 bg-transparent border border-gray-300 text-black py-3 rounded-[12px] font-[600] text-lg active:opacity-80 transition-opacity disabled:opacity-50"
+          >
+            {isGoogleLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <Image
+                  src="/images/google.svg"
+                  alt="Google"
+                  width={20}
+                  height={20}
+                />
+                Continue with Google
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
