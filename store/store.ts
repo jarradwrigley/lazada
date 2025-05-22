@@ -4,7 +4,6 @@ import { create } from "zustand";
 import { signIn, signOut, getSession } from "next-auth/react";
 import { showSuccess, showError, showInfo } from "@/lib/toast";
 import { UserRoles } from "@/lib/types";
-import { console } from "node:inspector";
 import { getNodeEnv } from "@/app/api/_services/env.service";
 
 
