@@ -2,8 +2,34 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+
+ 
+
+  // Public runtime config for client-side access
+  publicRuntimeConfig: {
+    NODE_ENV: process.env.NODE_ENV,
+  },
+
+  // Server runtime config for server-side access
+  serverRuntimeConfig: {
+    NODE_ENV: process.env.NODE_ENV,
+  },
+
   images: {
-    unoptimized: true, // ⬅️ This will ensure images load as they are
+    domains: ["localhost"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+    unoptimized: true,
+  },
+
+  // Experimental features
+  experimental: {
+    // Enable server components by default
+    serverComponentsExternalPackages: ["prisma"],
   },
 };
 
