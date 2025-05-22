@@ -11,7 +11,7 @@ interface User {
   userame: string;
   email: string;
   profilePic: string;
-  roles: string[]
+  roles: string[];
 }
 
 interface AuthState {
@@ -23,6 +23,7 @@ interface AppState {
   auth: AuthState;
   isLoading: boolean;
   error: string | null;
+  isHydrated: boolean;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   loadSession: () => Promise<void>;
@@ -35,14 +36,19 @@ interface AppState {
   clearError: () => void;
   resetStore: () => void;
   hasRole: (role: UserRoles) => boolean;
+  setHydrated: () => void;
 }
 
 export const useStore = create<AppState>((set, get) => ({
   auth: { user: null, isAuthenticated: false },
-  isLoading: false,
+  isLoading: true, // Start with loading true
   error: null,
+  isHydrated: false,
+
+  setHydrated: () => set({ isHydrated: true }),
 
   setLoading: (loading) => set({ isLoading: loading }),
+
   setError: (error) => {
     if (error) {
       showError(error);

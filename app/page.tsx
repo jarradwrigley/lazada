@@ -33,32 +33,32 @@ function useDeviceType() {
 }
 
 export default function HomePage() {
-  const { setLoading } = useStore();
+  const { setLoading, isHydrated } = useStore();
   const { isMobile, isLoading } = useDeviceType();
   const router = useRouter();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500);
+    // Only start the loading process after hydration
+    if (isHydrated) {
+      // Set loading to true first
+      setLoading(true);
 
-    return () => clearTimeout(timer);
-  }, [setLoading]);
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 2000); // Increased to 2 seconds for better visibility
+
+      return () => clearTimeout(timer);
+    }
+  }, [setLoading, isHydrated]);
 
   return (
     <>
       <MobileLayout>
-        {/* <div className="mobile-only"> */}
         <MobileHomePage />
-        {/* <LoginContent /> */}
-        {/* </div> */}
       </MobileLayout>
 
       <DesktopLayout>
-        {/* <div className="desktop-only"> */}
         <DesktopHomePage />
-        {/* <LoginContent /> */}
-        {/* </div> */}
       </DesktopLayout>
     </>
   );
