@@ -127,7 +127,7 @@ export const useStore = create<AppState>((set, get) => ({
       const provider =
         nodeEnv === "development" ? "mock" : "backend";
 
-      const result = await signIn(provider, {
+      const result = await signIn("mock", {
         username,
         password,
         redirect: false,
