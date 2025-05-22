@@ -5,16 +5,6 @@ import { signIn, signOut, getSession } from "next-auth/react";
 import { showSuccess, showError, showInfo } from "@/lib/toast";
 import { UserRoles } from "@/lib/types";
 
-// interface User {
-//   id: string;
-//   fullname: string;
-//   userame: string;
-//   email: string;
-//   profilePic: string;
-//   token: string;
-//   roles: string[];
-// }
-
 interface AuthState {
   user: any | null;
   isAuthenticated: boolean;
@@ -25,7 +15,7 @@ interface AppState {
   isLoading: boolean;
   error: string | null;
   isHydrated: boolean;
-  homeData: any | null; // Replace 'any' with your specific data type
+  homeData: any | null;
   fetchHomeData: () => Promise<void>;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -44,10 +34,9 @@ interface AppState {
 
 export const useStore = create<AppState>((set, get) => ({
   auth: { user: null, isAuthenticated: false },
-  isLoading: true, // Start with loading true
+  isLoading: false, // ← Changed to false by default
   error: null,
   isHydrated: false,
-
   homeData: null,
 
   fetchHomeData: async () => {
@@ -59,7 +48,7 @@ export const useStore = create<AppState>((set, get) => ({
           "Content-Type": "application/json",
           // Add auth headers if needed
           ...(get().auth.isAuthenticated && {
-            Authorization: `Bearer ${get().auth.user?.token}`, // if you store token
+            Authorization: `Bearer ${get().auth.user?.token}`,
           }),
         },
       });
@@ -75,11 +64,11 @@ export const useStore = create<AppState>((set, get) => ({
         isLoading: false,
       });
 
-      // showSuccess("Data loaded successfully");
+      console.log("[Store] Home data fetched successfully");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to fetch data";
-      // showError(`Failed to load data: ${errorMessage}`);
+      console.error("[Store] Failed to fetch home data:", errorMessage);
       set({
         error: errorMessage,
         isLoading: false,

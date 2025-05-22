@@ -7,8 +7,16 @@ import Lottie from "lottie-react";
 import loadingAnimation from "@/public/animations/Animation1.json";
 import { useStore } from "@/store/store";
 
-export default function LoadingScreen() {
-  const { isLoading, isHydrated, setHydrated } = useStore();
+interface LoadingScreenProps {
+  show?: boolean;
+  message?: string;
+}
+
+export default function LoadingScreen({
+  show,
+  message,
+}: LoadingScreenProps = {}) {
+  const { isHydrated, setHydrated } = useStore();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -27,16 +35,22 @@ export default function LoadingScreen() {
   // Don't render anything until mounted
   if (!isMounted) return null;
 
-  // Show loading if isLoading is true OR if store is not yet hydrated
-  if (!isLoading && isHydrated) return null;
+  // If show prop is provided, use that; otherwise check hydration status
+  const shouldShow = show !== undefined ? show : !isHydrated;
+
+  if (!shouldShow) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-50 backdrop-blur-sm">
-      <div className="rounded-lg bg-transparent p-6 ">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50 backdrop-blur-sm">
+      <div className="rounded-lg bg-transparent p-6">
         <div className="w-64 h-64">
           <Lottie animationData={loadingAnimation} loop={true} />
         </div>
-        {/* <p className="mt-4 text-center text-gray-700 font-medium">Loading...</p> */}
+        {message && (
+          <p className="mt-4 text-center text-gray-700 font-medium">
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );
