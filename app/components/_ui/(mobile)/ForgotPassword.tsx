@@ -484,7 +484,7 @@ export default function MobileForgotPasswordPage(): any {
   return (
     <div className="min-h-[100dvh] relative bg-gray-50">
       {/* Fixed header */}
-      <header className="fixed top-0 left-0 right-0 z-20 bg-gray-50 border-b border-gray-200 flex justify-between items-center py-4 px-4">
+      <header className="fixed top-0 left-0 right-0 z-20 bg-gray-50  flex justify-between items-center py-4 px-4">
         <button
           className="active:opacity-50 transition-opacity"
           onClick={() => router.push("/login")}
