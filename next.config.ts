@@ -3,8 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
 
- 
-
   // Public runtime config for client-side access
   publicRuntimeConfig: {
     NODE_ENV: process.env.NODE_ENV,
@@ -26,11 +24,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
 
-  // Experimental features
-  experimental: {
-    // Enable server components by default
-    serverComponentsExternalPackages: ["prisma"],
-  },
+  serverExternalPackages: ["prisma"],
 };
 
 export default nextConfig;
