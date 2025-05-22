@@ -1,9 +1,24 @@
-import React from 'react'
+import { Suspense } from "react";
+import { signIn } from "@/lib/auth";
+import MobileLayout from "../components/MobileLayout";
+import DesktopLayout from "../components/DesktopLayout";
+import MobileLoginPage from "../components/_ui/(mobile)/Login";
+import LoadingScreen from "../components/LoadingScreen";
+import MobileForgotPasswordPage from "../components/_ui/(mobile)/ForgotPassword";
+import MobileRegisterPage from "../components/_ui/(mobile)/Register";
 
-const RegisterPage = () => {
+export default function RegisterPage() {
   return (
-    <div>RegisterPage</div>
-  )
-}
+    <>
+      <MobileLayout>
+        <Suspense fallback={<LoadingScreen />}>
+          <MobileRegisterPage />
+        </Suspense>
+      </MobileLayout>
 
-export default RegisterPage
+      <DesktopLayout>
+        <h2>Desktop Register</h2>
+      </DesktopLayout>
+    </>
+  );
+}

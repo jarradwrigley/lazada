@@ -1,130 +1,57 @@
-import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { getMockStorage } from "@/lib/mock-storage";
 
-// In-memory storage for demo (use database in production)
-const resetCodes = new Map<
-  string,
-  { code: string; expires: number; attempts: number }
->();
-const verifiedSessions = new Map<
-  string,
-  { verified: boolean; expires: number }
->();
-const users = new Map<
-  string,
-  { password: string; email?: string; phone?: string }
->();
-
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const { emailOrPhone, verificationCode, newPassword } =
-      await request.json();
+    const { emailOrPhone, verificationCode, newPassword } = await req.json();
+    const storage = getMockStorage();
 
-    // Simulate processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-
-    // Basic validation
     if (!emailOrPhone || !verificationCode || !newPassword) {
-      return NextResponse.json(
+      return Response.json(
         { message: "All fields are required" },
         { status: 400 }
       );
     }
 
+    const normalizedEmail = emailOrPhone.toLowerCase();
+
+    if (!storage.verifiedResets.has(normalizedEmail)) {
+      return Response.json(
+        { message: "Password reset not verified" },
+        { status: 400 }
+      );
+    }
+
+    const user = storage.users.get(normalizedEmail);
+    if (!user) {
+      return Response.json({ message: "User not found" }, { status: 400 });
+    }
+
     if (newPassword.length < 8) {
-      return NextResponse.json(
+      return Response.json(
         { message: "Password must be at least 8 characters long" },
         { status: 400 }
       );
     }
 
-    // Check if session is verified
-    const session = verifiedSessions.get(emailOrPhone);
-    if (!session || !session.verified) {
-      return NextResponse.json(
-        { message: "Please verify your code first" },
-        { status: 401 }
-      );
-    }
+    const passwordHash = await bcrypt.hash(newPassword, 12);
 
-    // Check if session has expired
-    if (Date.now() > session.expires) {
-      verifiedSessions.delete(emailOrPhone);
-      return NextResponse.json(
-        { message: "Verification session has expired. Please start over." },
-        { status: 400 }
-      );
-    }
+    user.passwordHash = passwordHash;
+    storage.users.set(normalizedEmail, user);
 
-    // Double-check the verification code (additional security)
-    const storedCode = resetCodes.get(emailOrPhone);
-    if (!storedCode || storedCode.code !== verificationCode) {
-      return NextResponse.json(
-        { message: "Invalid verification code" },
-        { status: 400 }
-      );
-    }
+    storage.verificationCodes.delete(normalizedEmail);
+    storage.verifiedResets.delete(normalizedEmail);
 
-    // Simulate password strength validation
-    const hasUpperCase = /[A-Z]/.test(newPassword);
-    const hasLowerCase = /[a-z]/.test(newPassword);
-    const hasNumber = /\d/.test(newPassword);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+    await new Promise((res) => setTimeout(res, 1000)); // simulate delay
 
-    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
-      return NextResponse.json(
-        {
-          message:
-            "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-        },
-        { status: 400 }
-      );
-    }
+    console.log(`Password reset for user: ${normalizedEmail}`);
 
-    // Simulate common password check
-    const commonPasswords = ["12345678", "password", "qwerty123", "abc123456"];
-    if (commonPasswords.includes(newPassword.toLowerCase())) {
-      return NextResponse.json(
-        { message: "Please choose a more secure password" },
-        { status: 400 }
-      );
-    }
-
-    // Simulate database update failure (2% chance)
-    if (Math.random() < 0.02) {
-      return NextResponse.json(
-        { message: "Unable to update password. Please try again." },
-        { status: 500 }
-      );
-    }
-
-    // Update password in "database"
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isEmail = emailRegex.test(emailOrPhone);
-
-    users.set(emailOrPhone, {
-      password: newPassword, // In production, hash this password!
-      ...(isEmail ? { email: emailOrPhone } : { phone: emailOrPhone }),
-    });
-
-    // Clean up
-    resetCodes.delete(emailOrPhone);
-    verifiedSessions.delete(emailOrPhone);
-
-    console.log(`🔑 Password reset successfully for ${emailOrPhone}`);
-
-    return NextResponse.json(
-      {
-        message: "Password reset successfully",
-        success: true,
-      },
+    return Response.json(
+      { message: "Password reset successfully" },
       { status: 200 }
     );
   } catch (error) {
     console.error("Reset password error:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
+    return Response.json({ message: "Internal server error" }, { status: 500 });
   }
 }
-

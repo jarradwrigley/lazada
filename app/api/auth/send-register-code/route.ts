@@ -7,22 +7,24 @@ function generateVerificationCode(): string {
 
 export async function POST(req: Request) {
   try {
-    const { emailOrPhone } = await req.json();
+    const { email } = await req.json();
     const storage = getMockStorage();
 
-    if (!emailOrPhone) {
+    if (!email) {
+      return Response.json({ message: "Email is required" }, { status: 400 });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       return Response.json(
-        { message: "Email or phone is required" },
+        { message: "Invalid email format" },
         { status: 400 }
       );
     }
 
-    // Normalize and treat as email for mock logic
-    const normalizedEmail = emailOrPhone.toLowerCase();
-
-    if (!storage.users.has(normalizedEmail)) {
+    if (storage.users.has(email.toLowerCase())) {
       return Response.json(
-        { message: "No account found with this email" },
+        { message: "An account with this email already exists" },
         { status: 400 }
       );
     }
@@ -30,21 +32,21 @@ export async function POST(req: Request) {
     const code = generateVerificationCode();
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    storage.verificationCodes.set(normalizedEmail, { code, expiresAt });
+    storage.verificationCodes.set(email.toLowerCase(), { code, expiresAt });
 
     await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
 
-    console.log(`Reset code for ${emailOrPhone}: ${code}`);
+    console.log(`Verification code for ${email}: ${code}`);
 
     return Response.json(
       {
-        message: "Reset code sent successfully",
-        debug: { code }, // Remove in production
+        message: "Verification code sent successfully",
+        debug: { code }, // Remove this in production
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Send reset code error:", error);
+    console.error("Send signup code error:", error);
     return Response.json({ message: "Internal server error" }, { status: 500 });
   }
 }
