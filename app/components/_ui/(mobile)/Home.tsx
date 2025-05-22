@@ -3,19 +3,17 @@ import Image from "next/image";
 import Link from "next/link";
 import InfiniteImageSlider from "../../SnapSlider";
 
-
 export default function MobileHomePage() {
-
-    const photos = [
-      { url: "/images/promo1.jpg", alt: "Slide 1" },
-      { url: "/images/promo2.png", alt: "Slide 2" },
-      { url: "/images/promo3.jpg", alt: "Slide 3" },
-    ];
+  const photos = [
+    { url: "/images/promo1.jpg", alt: "Slide 1" },
+    { url: "/images/promo2.png", alt: "Slide 2" },
+    { url: "/images/promo3.jpg", alt: "Slide 3" },
+  ];
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-[100dvh] bg-gray-50">
         {/* Fixed header */}
-        <header className="fixed top-0 left-0 right-0 z-10 bg-gray-50 flex justify-between items-center py-2 px-4 border-b border-gray-100">
+        <header className="fixed top-0 left-0 right-0 z-10 bg-gray-50 flex justify-between items-center py-2 px-4">
           <button className="active:opacity-50 transition-opacity">
             <Grip size={24} />
           </button>

@@ -1,8 +1,9 @@
+import { Suspense } from "react";
 import { signIn } from "@/lib/auth";
 import MobileLayout from "../components/MobileLayout";
 import DesktopLayout from "../components/DesktopLayout";
-// import MobileLayout from "@/components/MobileLayout";
-// import DesktopLayout from "@/components/DesktopLayout";
+import MobileLoginPage from "../components/_ui/(mobile)/Login";
+import LoadingScreen from "../components/LoadingScreen";
 
 function LoginContent() {
   return (
@@ -33,21 +34,20 @@ function LoginContent() {
   );
 }
 
+
+
 export default function LoginPage() {
   return (
     <>
       <MobileLayout>
-        {/* <div className="mobile-only"> */}
-        <h2>Mobile Login</h2>
-        <LoginContent />
-        {/* </div> */}
+        <Suspense fallback={<LoadingScreen />}>
+          <MobileLoginPage />
+        </Suspense>
       </MobileLayout>
 
       <DesktopLayout>
-        {/* <div className="desktop-only"> */}
         <h2>Desktop Login</h2>
         <LoginContent />
-        {/* </div> */}
       </DesktopLayout>
     </>
   );

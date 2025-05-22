@@ -5,18 +5,18 @@ import { signIn, signOut, getSession } from "next-auth/react";
 import { showSuccess, showError, showInfo } from "@/lib/toast";
 import { UserRoles } from "@/lib/types";
 
-interface User {
-  id: string;
-  fullname: string;
-  userame: string;
-  email: string;
-  profilePic: string;
-  token: string;
-  roles: string[];
-}
+// interface User {
+//   id: string;
+//   fullname: string;
+//   userame: string;
+//   email: string;
+//   profilePic: string;
+//   token: string;
+//   roles: string[];
+// }
 
 interface AuthState {
-  user: User | null;
+  user: any | null;
   isAuthenticated: boolean;
 }
 
@@ -106,7 +106,7 @@ export const useStore = create<AppState>((set, get) => ({
       if (session?.user) {
         set({
           auth: {
-            user: session.user as User,
+            user: session.user as any,
             isAuthenticated: true,
           },
           isLoading: false,
