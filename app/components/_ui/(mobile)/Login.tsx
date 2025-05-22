@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { ChevronLeft, Headset, Eye, EyeOff, Loader2 } from "lucide-react";
-import {  useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useStore } from "@/store/store";
@@ -84,9 +84,12 @@ function LoginForm() {
       if (result.success) {
         router.push("/dashboard");
       }
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      showError("Login failed. Try again later");
     }
+    // finally {
+    //   setLoading(false);
+    // }
   };
 
   const handleGoogleLogin = async () => {
@@ -114,7 +117,7 @@ function LoginForm() {
   };
 
   const handleSignUp = () => {
-    router.push("/signup");
+    router.push("/register");
   };
 
   const isFormValid =
@@ -285,11 +288,7 @@ export default function MobileLoginPage() {
   return (
     <div className="min-h-[100dvh] relative bg-gray-50">
       <LoginHeader />
-      <Suspense
-        fallback={
-          <LoadingScreen />
-        }
-      >
+      <Suspense fallback={<LoadingScreen />}>
         <LoginForm />
       </Suspense>
     </div>

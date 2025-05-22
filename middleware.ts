@@ -12,7 +12,7 @@ export default auth((req) => {
   }
 
   // Public routes that don't require auth
-  const publicRoutes = ["/", "/login", "/signup", "/forgot-password"];
+  const publicRoutes = ["/", "/login", "/register", "/forgot-password"];
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
 
   // If logged in and trying to access home page, redirect to dashboard
