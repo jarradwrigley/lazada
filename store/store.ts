@@ -4,6 +4,10 @@ import { create } from "zustand";
 import { signIn, signOut, getSession } from "next-auth/react";
 import { showSuccess, showError, showInfo } from "@/lib/toast";
 import { UserRoles } from "@/lib/types";
+import { console } from "node:inspector";
+import { getNodeEnv } from "@/app/api/_services/env.service";
+
+
 
 interface AuthState {
   user: any | null;
@@ -118,9 +122,11 @@ export const useStore = create<AppState>((set, get) => ({
 
   login: async (username, password, returnUrl) => {
     set({ isLoading: true, error: null });
+
+    const nodeEnv = await getNodeEnv();
     try {
       const provider =
-        process.env.NODE_ENV === "development" ? "mock" : "backend";
+        nodeEnv === "development" ? "mock" : "backend";
 
       const result = await signIn(provider, {
         username,
