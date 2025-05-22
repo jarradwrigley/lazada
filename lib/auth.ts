@@ -88,7 +88,7 @@ async function authenticateBackendUser(username: string, password: string) {
   }
 }
 
-const isDevelopment = process.env.NODE_ENV === "development";
+// const isDevelopment = process.env.NODE_ENV === "development";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -100,22 +100,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
     // Credentials provider for username/password authentication
     Credentials({
-      id: isDevelopment ? "mock" : "backend",
-      name: isDevelopment ? "Mock Login" : "Credentials",
+      // id: isDevelopment ? "mock" : "backend",
+      // name: isDevelopment ? "Mock Login" : "Credentials",
+      id: "mock",
+      name: "Mock Login",
       credentials: {
         username: {
           label: "Username or Email",
           type: "text",
-          placeholder: isDevelopment
-            ? "admin, user, or officer"
-            : "Enter username/email",
+          placeholder: "Enter username/email",
         },
         password: {
           label: "Password",
           type: "password",
-          placeholder: isDevelopment
-            ? "admin123, user123, or officer123"
-            : "Enter password",
+          placeholder: "Enter password",
         },
       },
       async authorize(credentials) {
@@ -125,19 +123,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const { username, password } = credentials;
 
-        if (isDevelopment) {
-          // Use mock authentication in development
-          return await authenticateMockUser(
-            username as string,
-            password as string
-          );
-        } else {
-          // Use backend authentication in production
-          return await authenticateBackendUser(
-            username as string,
-            password as string
-          );
-        }
+        // if (isDevelopment) {
+        // Use mock authentication in development
+        return await authenticateMockUser(
+          username as string,
+          password as string
+        );
+        // } else {
+        //   // Use backend authentication in production
+        //   return await authenticateBackendUser(
+        //     username as string,
+        //     password as string
+        //   );
+        // }
       },
     }),
   ],

@@ -144,11 +144,10 @@ export const useStore = create<AppState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Determine provider based on environment
-      const isDevelopment = process.env.NODE_ENV === "development";
-      showInfo(isDevelopment ? 'True' : 'False')
-      const provider = isDevelopment ? "mock" : "backend";
+      // const isDevelopment = process.env.NODE_ENV === "development";
+      // const provider = isDevelopment ? "mock" : "backend";
 
-      const result = await signIn(provider, {
+      const result = await signIn("mock", {
         username,
         password,
         redirect: false,
