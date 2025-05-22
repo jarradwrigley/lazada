@@ -214,6 +214,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
     // Use mock provider in development, backend in production
     // process.env.NODE_ENV === "development" ? MockProvider : BackendProvider,
+    MockProvider
   ],
   pages: {
     signIn: "/login",
