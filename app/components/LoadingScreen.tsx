@@ -31,12 +31,12 @@ export default function LoadingScreen() {
   if (!isLoading && isHydrated) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-50 backdrop-blur-sm">
-      <div className="rounded-lg bg-transparent p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-50 backdrop-blur-sm">
+      <div className="rounded-lg bg-transparent p-6 ">
         <div className="w-64 h-64">
           <Lottie animationData={loadingAnimation} loop={true} />
         </div>
-        <p className="mt-4 text-center text-gray-700 font-medium">Loading...</p>
+        {/* <p className="mt-4 text-center text-gray-700 font-medium">Loading...</p> */}
       </div>
     </div>
   );

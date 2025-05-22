@@ -11,6 +11,7 @@ interface User {
   userame: string;
   email: string;
   profilePic: string;
+  token: string;
   roles: string[];
 }
 
@@ -24,6 +25,8 @@ interface AppState {
   isLoading: boolean;
   error: string | null;
   isHydrated: boolean;
+  homeData: any | null; // Replace 'any' with your specific data type
+  fetchHomeData: () => Promise<void>;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   loadSession: () => Promise<void>;
@@ -44,6 +47,46 @@ export const useStore = create<AppState>((set, get) => ({
   isLoading: true, // Start with loading true
   error: null,
   isHydrated: false,
+
+  homeData: null,
+
+  fetchHomeData: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await fetch("/api/home-data", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          // Add auth headers if needed
+          ...(get().auth.isAuthenticated && {
+            Authorization: `Bearer ${get().auth.user?.token}`, // if you store token
+          }),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      set({
+        homeData: data,
+        isLoading: false,
+      });
+
+      // showSuccess("Data loaded successfully");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch data";
+      // showError(`Failed to load data: ${errorMessage}`);
+      set({
+        error: errorMessage,
+        isLoading: false,
+        homeData: null,
+      });
+    }
+  },
 
   setHydrated: () => set({ isHydrated: true }),
 
