@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { ChevronLeft, Headset, Eye, EyeOff, Loader2 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import {  useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useStore } from "@/store/store";
@@ -270,7 +270,7 @@ function LoginHeader() {
     <header className="fixed top-0 left-0 right-0 z-10 bg-gray-50 flex justify-between items-center py-2 px-4">
       <button
         className="active:opacity-50 transition-opacity"
-        onClick={() => router.back()}
+        onClick={() => router.push("/")}
       >
         <ChevronLeft size={24} />
       </button>
