@@ -8,49 +8,34 @@ import MobileLayout from "./components/MobileLayout";
 import DesktopLayout from "./components/DesktopLayout";
 import MobileHomePage from "./components/_ui/(mobile)/Home";
 import DesktopHomePage from "./components/_ui/(desktop)/Home";
+import LoadingScreen from "./components/LoadingScreen"; // Your loading component
 
-function useDeviceType() {
-  const [isMobile, setIsMobile] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+export default function HomePage() {
+  const { fetchHomeData, isLoading } = useStore();
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    const checkDevice = () => {
-      if (typeof window !== "undefined") {
-        const userAgent = navigator.userAgent;
-        const mobile =
-          /Mobile|Android|iPhone|iPad|iPod|BlackBerry|Opera Mini/i.test(
-            userAgent
-          );
-        setIsMobile(mobile);
-        setIsLoading(false);
+    const initializeData = async () => {
+      if (!hasInitialized) {
+        console.log("[HomePage] Initializing data fetch...");
+        await fetchHomeData();
+        setHasInitialized(true);
       }
     };
 
-    checkDevice();
-  }, []);
+    initializeData();
+  }, [fetchHomeData, hasInitialized]);
 
-  return { isMobile, isLoading };
-}
+  // Show loading screen while data is being fetched initially
+  if (isLoading && !hasInitialized) {
+    return (
+      <>
+        <LoadingScreen />
+      </>
+    );
+  }
 
-export default function HomePage() {
-  const { setLoading, isHydrated } = useStore();
-  const { isMobile, isLoading } = useDeviceType();
-  const router = useRouter();
-
-  useEffect(() => {
-    // Only start the loading process after hydration
-    if (isHydrated) {
-      // Set loading to true first
-      setLoading(true);
-
-      const timer = setTimeout(() => {
-        setLoading(false);
-      }, 2000); // Increased to 2 seconds for better visibility
-
-      return () => clearTimeout(timer);
-    }
-  }, [setLoading, isHydrated]);
-
+  // Main content
   return (
     <>
       <MobileLayout>
