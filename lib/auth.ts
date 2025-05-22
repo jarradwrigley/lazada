@@ -213,8 +213,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
     // Use mock provider in development, backend in production
-    // process.env.NODE_ENV === "development" ? MockProvider : BackendProvider,
-    MockProvider
+    process.env.NODE_ENV as string === "development" ? MockProvider : BackendProvider,
+    // MockProvider
   ],
   pages: {
     signIn: "/login",
