@@ -37,17 +37,17 @@ export default function LoginPage() {
   return (
     <>
       <MobileLayout>
-        <div className="mobile-only">
-          <h2>Mobile Login</h2>
-          <LoginContent />
-        </div>
+        {/* <div className="mobile-only"> */}
+        <h2>Mobile Login</h2>
+        <LoginContent />
+        {/* </div> */}
       </MobileLayout>
 
       <DesktopLayout>
-        <div className="desktop-only">
-          <h2>Desktop Login</h2>
-          <LoginContent />
-        </div>
+        {/* <div className="desktop-only"> */}
+        <h2>Desktop Login</h2>
+        <LoginContent />
+        {/* </div> */}
       </DesktopLayout>
     </>
   );

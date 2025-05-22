@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useStore } from "@/store/store";
+import MobileLayout from "./components/MobileLayout";
+import DesktopLayout from "./components/DesktopLayout";
+import MobileHomePage from "./components/_ui/(mobile)/Home";
+import DesktopHomePage from "./components/_ui/(desktop)/Home";
 
 function useDeviceType() {
   const [isMobile, setIsMobile] = useState(false);
@@ -28,24 +33,33 @@ function useDeviceType() {
 }
 
 export default function HomePage() {
+  const { setLoading } = useStore();
   const { isMobile, isLoading } = useDeviceType();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) {
-      // Always redirect to dashboard since auth middleware handles login redirect
-      router.push("/dashboard");
-    }
-  }, [isLoading, router]);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+    return () => clearTimeout(timer);
+  }, [setLoading]);
 
   return (
-    <div>
-      <h1>Redirecting...</h1>
-      <p>Device: {isMobile ? "Mobile" : "Desktop"}</p>
-    </div>
+    <>
+      <MobileLayout>
+        {/* <div className="mobile-only"> */}
+        <MobileHomePage />
+        {/* <LoginContent /> */}
+        {/* </div> */}
+      </MobileLayout>
+
+      <DesktopLayout>
+        {/* <div className="desktop-only"> */}
+        <DesktopHomePage />
+        {/* <LoginContent /> */}
+        {/* </div> */}
+      </DesktopLayout>
+    </>
   );
 }

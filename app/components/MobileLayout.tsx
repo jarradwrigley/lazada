@@ -9,7 +9,7 @@ interface MobileLayoutProps {
 export default function MobileLayout({ children }: MobileLayoutProps) {
   return (
     <div className="mobile-layout mobile-only">
-      <div
+      {/* <div
         style={{
           backgroundColor: "#007bff",
           color: "white",
@@ -19,7 +19,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
         }}
       >
         📱 Mobile View
-      </div>
+      </div> */}
       {children}
     </div>
   );
